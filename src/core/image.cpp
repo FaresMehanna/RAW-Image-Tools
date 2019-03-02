@@ -12,10 +12,10 @@ static bool is_little_endian()
 }
 
 Image::Image(uint8_t bit_depth,
-			 uint8_t pixel_size,
-			 uint16_t height,
-			 uint16_t width,
-			 bool little_endian)
+	uint8_t pixel_size,
+	uint16_t height,
+	uint16_t width,
+	bool little_endian)
 {
 	//assert_utils
 	assert_util(height%2==0, "Error, height must be multiple of two");

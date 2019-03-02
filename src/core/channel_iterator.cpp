@@ -13,8 +13,8 @@ ChannelIterator::ChannelIterator(BayerImage& img, uint8_t channel_number) :
 	curr_ptr_ = 0;
 
 	single_channel_ = img_.get_bayer_pattern() == 0x00000000 ||
-					  img_.get_bayer_pattern() == 0x01010101 ||
-					  img_.get_bayer_pattern() == 0x02020202;
+			img_.get_bayer_pattern() == 0x01010101 ||
+			img_.get_bayer_pattern() == 0x02020202;
 
 	reset_to_begining();
 }

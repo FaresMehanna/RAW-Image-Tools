@@ -45,49 +45,50 @@ int main(int argc, char** argv)
 	MAIN_ASSERT(argc==2, "usage: " + string(argv[0]) + " input_image.RAW12");
 
 	//check image size
-    struct stat info;
-    stat(argv[1], &info);
+	struct stat info;
+	stat(argv[1], &info);
 
-    //check for valid size
- 	MAIN_ASSERT(RAW12_IMAGE_SIZE <= info.st_size, "RAW12 file is corrupted!");
+	//check for valid size
+	MAIN_ASSERT(RAW12_IMAGE_SIZE <= info.st_size, "RAW12 file is corrupted!");
 
- 	//open the image file
- 	FILE* raw12_fp = fopen(argv[1], "rb");
-  	MAIN_ASSERT(raw12_fp != NULL, "Can't read RAW12 file!");
+	//open the image file
+	FILE* raw12_fp = fopen(argv[1], "rb");
+	MAIN_ASSERT(raw12_fp != NULL, "Can't read RAW12 file!");
 
-  	//create image object and load the data from the disk
-  	LOG("Loading the image.");
- 	BayerImage img(RAW12_BIT_DEPTH, RAW12_PIXEL_SIZE, 
- 					RAW12_HEIGHT, RAW12_WIDTH,
- 					RAW12_BAYER_PATTERN, RAW12_LITTLE_ENDIAN);
+	//create image object and load the data from the disk
+	LOG("Loading the image.");
+	BayerImage img(RAW12_BIT_DEPTH,
+			RAW12_PIXEL_SIZE, 
+			RAW12_HEIGHT, RAW12_WIDTH,
+			RAW12_BAYER_PATTERN, RAW12_LITTLE_ENDIAN);
 	img.load_image(raw12_fp);
 
 	{
 		//create optimal lut to convert to 8-bits from 12-bits.
 		double gamma = 0.54115, gain = 1.02447, offset = -21.74171;
-	 	BD_ConverterGGO optimal_lut(RAW12_BIT_DEPTH, RAW12_GAMMA_TO_BITS, gamma, gain, offset);
-	 	//adjust the optimal lut to make use of all possible values
+		BD_ConverterGGO optimal_lut(RAW12_BIT_DEPTH, RAW12_GAMMA_TO_BITS, gamma, gain, offset);
+		//adjust the optimal lut to make use of all possible values
 		optimal_lut.add_special_mapping(20, 1);
 		optimal_lut.add_special_mapping(21, 2);
 		optimal_lut.add_special_mapping(22, 3);
 		optimal_lut.add_special_mapping(23, 4);
 
 		//convert to 8-bits from 12-bits.
-	 	LOG("Converting image from 12-bits to 8-bits using optimal lut.");
+		LOG("Converting image from 12-bits to 8-bits using optimal lut.");
 		img.convert_pixel_size(RAW12_GAMMA_TO_BITS, &optimal_lut);
 	}
 
 	//generate pgm for the main image
 	{
-	 	LOG("Creating pgm for the main image.");
-	 	//open file for write
-	 	ofstream main_image;
-	 	string image_file_name = string(argv[1]) + "_bayer_image.pgm";
-	 	main_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
-	 	//generate and write to the file
-	  	MAIN_ASSERT(generate_pnm("P5", &img, main_image) == ok, "Error while encoding to PNM file.");
-	  	main_image.close();
-  	}
+		LOG("Creating pgm for the main image.");
+		//open file for write
+		ofstream main_image;
+		string image_file_name = string(argv[1]) + "_bayer_image.pgm";
+		main_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
+		//generate and write to the file
+		MAIN_ASSERT(generate_pnm("P5", &img, main_image) == ok, "Error while encoding to PNM file.");
+		main_image.close();
+	}
 
 
 	//generate pgm for the 4 channels
@@ -98,15 +99,15 @@ int main(int argc, char** argv)
 		//print 5x5 of this channel
 		LOG("Printing first 5x5 for channel " + to_string(i) + ".");
 		print_square(channel_x);
-		
-	 	//open file for write
-	 	ofstream channel_image;
-	 	string image_file_name = string(argv[1]) + "_channel_" + to_string(i) + ".pgm";
-	 	channel_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
 
-	 	//generate and write to the file
- 		LOG("Creating pgm for the channel " + to_string(i) + ".");
-	  	MAIN_ASSERT(generate_pnm("P5", &channel_x, channel_image) == ok, "Error while encoding to PNM file.");
+		//open file for write
+		ofstream channel_image;
+		string image_file_name = string(argv[1]) + "_channel_" + to_string(i) + ".pgm";
+		channel_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
+
+		//generate and write to the file
+		LOG("Creating pgm for the channel " + to_string(i) + ".");
+		MAIN_ASSERT(generate_pnm("P5", &channel_x, channel_image) == ok, "Error while encoding to PNM file.");
 		channel_image.close();
 	}
 
@@ -114,10 +115,10 @@ int main(int argc, char** argv)
 		//debayer the image
 		DebayeredImage d_img(img);
 
-	 	//open file for write
-	 	ofstream debayered_image;
-	 	string image_file_name = string(argv[1]) + "_debayered_image.ppm";
-	 	debayered_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
+		//open file for write
+		ofstream debayered_image;
+		string image_file_name = string(argv[1]) + "_debayered_image.ppm";
+		debayered_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
 
 		//generate ppm for the debayered image
 		LOG("Debayering and creating ppm for the debayered image.");

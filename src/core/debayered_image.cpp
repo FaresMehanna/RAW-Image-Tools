@@ -4,10 +4,10 @@ using namespace std;
 
 DebayeredImage::DebayeredImage(BayerImage img) :
 	Image(img.get_bit_depth(),
-		  img.get_pixel_size(),
-		  img.get_height(),
-		  img.get_width(),
-		  img.get_little_endian())
+		img.get_pixel_size(),
+		img.get_height(),
+		img.get_width(),
+		img.get_little_endian())
 {
 	bayer_pattern_ = img.get_bayer_pattern();
 	load_image(img.get_image(false).get());
