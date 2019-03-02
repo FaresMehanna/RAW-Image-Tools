@@ -78,7 +78,6 @@ void DebayeredImage::debayer_nni()
 		}
 	}
 
-
 	//that's a wrap
 	image_ = debayerd_img;
 	width_ = width_ * 3;
@@ -119,7 +118,11 @@ uint16_t DebayeredImage::get_width()
 
 uint64_t DebayeredImage::get_used_bits()
 {
-	return (uint64_t)height_ * width_ * pixel_size_;
+	if(!debayered_) {
+		return (uint64_t)height_ * width_ * pixel_size_ * 3;
+	} else {
+		return (uint64_t)height_ * width_ * pixel_size_;
+	}
 }
 
 uint64_t DebayeredImage::get_pixels_num()

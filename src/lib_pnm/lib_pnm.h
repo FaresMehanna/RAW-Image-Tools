@@ -14,14 +14,21 @@
 
 using namespace std;
 
+#define LIB_PNM_BINARY_OUTPUT (true)
+#define LIB_PNM_ASCII_OUTPUT (false)
+
+
 enum lib_pnm_state {unsupported_mode_of_operation,
 					unsupported_bit_depth,
 					memory_error,
 					ok,
 					}; 
 
-//can output any king of Image objects
-lib_pnm_state generate_pnm(string magic_number, Image* img, shared_ptr<uint8_t>& data, uint32_t* data_length);
-lib_pnm_state generate_pnm(string magic_number, Image* img, ofstream& out_file);
+//can output any kind of Image objects.
+lib_pnm_state generate_pnm(bool binary_output, Image* img, shared_ptr<uint8_t>& data, uint32_t* data_length);
+lib_pnm_state generate_pnm(bool binary_output, Image* img, ofstream& out_file);
+
+//file_type_out will have the correct file extension output for the given image. 
+lib_pnm_state pnm_file_extension(Image* img, string& file_type_out);
 
 #endif

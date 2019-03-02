@@ -2,6 +2,25 @@
 
 using namespace std;
 
+static inline string get_magic_number(Image* img, bool binary_output)
+{
+	if(img->get_image_type() == BAYER_IMAGE) {
+		if(binary_output) {
+			return "P5";
+		} else {
+			return "P2";
+		}
+	} else if (img->get_image_type() == DEBAYERED_IMAGE) {
+		if(binary_output) {
+			return "P6";
+		} else {
+			return "P3";
+		}
+	} else {
+		return "INVALID";
+	}
+}
+
 static inline vector<uint8_t> write_header(string& magic_number, Image* img)
 {
 	//get width and height and max value
@@ -38,15 +57,11 @@ static inline vector<uint8_t> write_header(string& magic_number, Image* img)
 	return data;
 }
 
-lib_pnm_state generate_pnm(string magic_number, Image* img, shared_ptr<uint8_t>& data, uint32_t* data_length)
+lib_pnm_state generate_pnm(bool binary_output, Image* img, shared_ptr<uint8_t>& data, uint32_t* data_length)
 {
 	//binary or ascii?
-	bool binary;
-	if(magic_number == "P2" || magic_number == "P3") {
-		binary = false;
-	} else if(magic_number == "P5" || magic_number == "P6") {
-		binary = true;
-	} else {
+	string magic_number = get_magic_number(img, binary_output);
+	if(magic_number == "INVALID") {
 		return unsupported_mode_of_operation;
 	}
 
@@ -61,7 +76,7 @@ lib_pnm_state generate_pnm(string magic_number, Image* img, shared_ptr<uint8_t>&
 	int img_size = img->get_used_bits() / img->get_pixel_size();
 	BitIterator img_it(img->get_image(false).get(), img->get_used_bits());
 
-	if(binary) {
+	if(binary_output) {
 		for(int i=0; i<img_size; i++) {
 			inner_data.push_back(img_it.get(img->get_pixel_size()));
 		}
@@ -82,15 +97,11 @@ lib_pnm_state generate_pnm(string magic_number, Image* img, shared_ptr<uint8_t>&
 	return ok;
 }
 
-lib_pnm_state generate_pnm(string magic_number, Image* img, ofstream& out_file)
+lib_pnm_state generate_pnm(bool binary_output, Image* img, ofstream& out_file)
 {
 	//binary or ascii?
-	bool binary;
-	if(magic_number == "P2" || magic_number == "P3") {
-		binary = false;
-	} else if(magic_number == "P5" || magic_number == "P6") {
-		binary = true;
-	} else {
+	string magic_number = get_magic_number(img, binary_output);
+	if(magic_number == "INVALID") {
 		return unsupported_mode_of_operation;
 	}
 
@@ -107,7 +118,7 @@ lib_pnm_state generate_pnm(string magic_number, Image* img, ofstream& out_file)
 	int img_size = img->get_used_bits() / img->get_pixel_size();
 	BitIterator img_it(img->get_image(false).get(), img->get_used_bits());
 
-	if(binary) {
+	if(binary_output) {
 		for(int i=0; i<img_size; i++) {
 			char pixel = img_it.get(img->get_pixel_size());
 			out_file.write(&pixel,1);
@@ -119,5 +130,17 @@ lib_pnm_state generate_pnm(string magic_number, Image* img, ofstream& out_file)
 		}
 	}
 
+	return ok;
+}
+
+lib_pnm_state pnm_file_extension(Image* img, string& file_type_out)
+{
+	if(img->get_image_type() == BAYER_IMAGE) {
+		file_type_out = "pgm";
+	} else if (img->get_image_type() == DEBAYERED_IMAGE) {
+		file_type_out = "ppm";
+	} else {
+		return unsupported_mode_of_operation;
+	}
 	return ok;
 }
