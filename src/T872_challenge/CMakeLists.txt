@@ -1,0 +1,7 @@
+file( GLOB raw12_executables *.cpp )
+foreach( raw12_source_file ${raw12_executables} )
+	get_filename_component( raw_name ${raw12_source_file} NAME )
+	string( REPLACE ".cpp" "" raw_name ${raw_name} )
+	add_executable( ${raw_name} ${raw12_source_file} )
+	target_link_libraries( ${raw_name} ${Libraries} )
+endforeach( raw12_source_file ${raw12_executables} )
