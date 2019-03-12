@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "../lib_pnm/lib_pnm.h"
+#include "../lib_dng/lib_dng.h"
 #include "../core/bayer_image.h"
 #include "../core/debayered_image.h"
 #include "../core/bitdepth_converter.h"
@@ -66,6 +67,11 @@ int main(int argc, char** argv)
 	img.load_image(raw12_fp);
 
 	{
+		LOG("Creating dng for the main image.");
+		MAIN_ASSERT(generate_dng(&img, string(argv[1]) + "_main.dng") == dng_ok, "Error while encoding to DNG file.");
+	}
+
+	{
 		//create optimal lut to convert to 8-bits from 12-bits.
 		double gamma = 0.54115, gain = 1.02447, offset = -21.74171;
 		BD_ConverterGGO optimal_lut(RAW12_BIT_DEPTH, RAW12_GAMMA_TO_BITS, gamma, gain, offset);
@@ -85,12 +91,12 @@ int main(int argc, char** argv)
 		LOG("Creating pgm for the main image.");
 		//open file for write
 		string file_type;
-		MAIN_ASSERT(pnm_file_extension(&img, file_type) == ok, "Error while encoding to PNM file.");
+		MAIN_ASSERT(pnm_file_extension(&img, file_type) == pnm_ok, "Error while encoding to PNM file.");
 		ofstream main_image;
 		string image_file_name = string(argv[1]) + "_bayer_image." + file_type;
 		main_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
 		//generate and write to the file
-		MAIN_ASSERT(generate_pnm(LIB_PNM_BINARY_OUTPUT, &img, main_image) == ok, "Error while encoding to PNM file.");
+		MAIN_ASSERT(generate_pnm(LIB_PNM_BINARY_OUTPUT, &img, main_image) == pnm_ok, "Error while encoding to PNM file.");
 		main_image.close();
 	}
 
@@ -106,14 +112,14 @@ int main(int argc, char** argv)
 
 		//open file for write
 		string file_type;
-		MAIN_ASSERT(pnm_file_extension(&channel_x, file_type) == ok, "Error while encoding to PNM file.");
+		MAIN_ASSERT(pnm_file_extension(&channel_x, file_type) == pnm_ok, "Error while encoding to PNM file.");
 		ofstream channel_image;
 		string image_file_name = string(argv[1]) + "_channel_" + to_string(i) + "." + file_type;
 		channel_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
 
 		//generate and write to the file
 		LOG("Creating pgm for the channel " + to_string(i) + ".");
-		MAIN_ASSERT(generate_pnm(LIB_PNM_BINARY_OUTPUT, &channel_x, channel_image) == ok, "Error while encoding to PNM file.");
+		MAIN_ASSERT(generate_pnm(LIB_PNM_BINARY_OUTPUT, &channel_x, channel_image) == pnm_ok, "Error while encoding to PNM file.");
 		channel_image.close();
 	}
 
@@ -123,14 +129,14 @@ int main(int argc, char** argv)
 
 		//open file for write
 		string file_type;
-		MAIN_ASSERT(pnm_file_extension(&d_img, file_type) == ok, "Error while encoding to PNM file.");
+		MAIN_ASSERT(pnm_file_extension(&d_img, file_type) == pnm_ok, "Error while encoding to PNM file.");
 		ofstream debayered_image;
 		string image_file_name = string(argv[1]) + "_debayered_image." + file_type;
 		debayered_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
 
 		//generate ppm for the debayered image
 		LOG("Debayering and creating ppm for the debayered image.");
-		MAIN_ASSERT(generate_pnm(LIB_PNM_BINARY_OUTPUT, &d_img, debayered_image) == ok, "Error while encoding to PNM file.");
+		MAIN_ASSERT(generate_pnm(LIB_PNM_BINARY_OUTPUT, &d_img, debayered_image) == pnm_ok, "Error while encoding to PNM file.");
 		debayered_image.close();
 	}
 

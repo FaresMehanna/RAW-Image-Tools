@@ -18,10 +18,10 @@ using namespace std;
 #define LIB_PNM_ASCII_OUTPUT (false)
 
 
-enum lib_pnm_state {unsupported_mode_of_operation,
-					unsupported_bit_depth,
-					memory_error,
-					ok,
+enum lib_pnm_state {pnm_unsupported_mode_of_operation,
+					pnm_unsupported_bit_depth,
+					pnm_memory_error,
+					pnm_ok,
 					}; 
 
 //can output any kind of Image objects.

@@ -62,12 +62,12 @@ lib_pnm_state generate_pnm(bool binary_output, Image* img, shared_ptr<uint8_t>& 
 	//binary or ascii?
 	string magic_number = get_magic_number(img, binary_output);
 	if(magic_number == "INVALID") {
-		return unsupported_mode_of_operation;
+		return pnm_unsupported_mode_of_operation;
 	}
 
 	//handle bit depth
 	if(img->get_bit_depth() > 8) {
-		return unsupported_bit_depth;
+		return pnm_unsupported_bit_depth;
 	}
 	//generate header for both binary and ascii
 	vector<uint8_t> inner_data = write_header(magic_number, img);
@@ -94,7 +94,7 @@ lib_pnm_state generate_pnm(bool binary_output, Image* img, shared_ptr<uint8_t>& 
 	data = final_data;
 	memcpy(final_data.get(), &inner_data[0], inner_data.size());
 	*data_length = inner_data.size();
-	return ok;
+	return pnm_ok;
 }
 
 lib_pnm_state generate_pnm(bool binary_output, Image* img, ofstream& out_file)
@@ -102,12 +102,12 @@ lib_pnm_state generate_pnm(bool binary_output, Image* img, ofstream& out_file)
 	//binary or ascii?
 	string magic_number = get_magic_number(img, binary_output);
 	if(magic_number == "INVALID") {
-		return unsupported_mode_of_operation;
+		return pnm_unsupported_mode_of_operation;
 	}
 
 	//handle bit depth
 	if(img->get_bit_depth() > 8) {
-		return unsupported_bit_depth;
+		return pnm_unsupported_bit_depth;
 	}
 	//generate header for both binary and ascii
 	for(uint8_t header_data : write_header(magic_number, img)) {
@@ -130,7 +130,7 @@ lib_pnm_state generate_pnm(bool binary_output, Image* img, ofstream& out_file)
 		}
 	}
 
-	return ok;
+	return pnm_ok;
 }
 
 lib_pnm_state pnm_file_extension(Image* img, string& file_type_out)
@@ -140,7 +140,7 @@ lib_pnm_state pnm_file_extension(Image* img, string& file_type_out)
 	} else if (img->get_image_type() == DEBAYERED_IMAGE) {
 		file_type_out = "ppm";
 	} else {
-		return unsupported_mode_of_operation;
+		return pnm_unsupported_mode_of_operation;
 	}
-	return ok;
+	return pnm_ok;
 }
