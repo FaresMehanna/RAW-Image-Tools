@@ -39,6 +39,36 @@ void BitIterator::set(uint64_t value, uint8_t num_bits)
 	}
 
 	//put rest of bytes
+	while(num_bits >= 64) {
+		*((uint64_t*)(data_ptr_ + curr_byte_)) = value;
+
+		//change data
+		value = 0;
+		num_bits -= 64;
+		curr_byte_+=8;
+	}
+
+	//put rest of bytes
+	while(num_bits >= 32) {
+		*((uint32_t*)(data_ptr_ + curr_byte_)) = value >> 32;
+
+		//change data
+		value = value<<32;
+		num_bits -= 32;
+		curr_byte_+=4;
+	}
+
+	//put rest of bytes
+	while(num_bits >= 16) {
+		*((uint16_t*)(data_ptr_ + curr_byte_)) = value >> 48;
+
+		//change data
+		value = value<<16;
+		num_bits -= 16;
+		curr_byte_+=2;
+	}
+
+	//put rest of bytes
 	while(num_bits >= 8) {
 		data_ptr_[curr_byte_] = value >> 56;
 
@@ -57,6 +87,7 @@ void BitIterator::set(uint64_t value, uint8_t num_bits)
 		//change data
 		curr_bit_ = num_bits;
 	}
+
 }
 
 uint64_t BitIterator::get(uint8_t num_bits)
@@ -88,7 +119,46 @@ uint64_t BitIterator::get(uint8_t num_bits)
 		curr_byte_++;
 	}
 
-	//put rest of bytes
+	//get rest of bytes
+	while(num_bits >= 64) {
+		//make space for new byte
+		result = 0;
+
+		//add data
+		result |= *((uint64_t*)(data_ptr_ + curr_byte_));
+
+		//change data
+		num_bits -= 64;
+		curr_byte_+=8;
+	}
+
+	//get rest of bytes
+	while(num_bits >= 32) {
+		//make space for new byte
+		result = result<<32;
+
+		//add data
+		result |= *((uint32_t*)(data_ptr_ + curr_byte_));
+
+		//change data
+		num_bits -= 32;
+		curr_byte_+=4;
+	}
+
+	//get rest of bytes
+	while(num_bits >= 16) {
+		//make space for new byte
+		result = result<<16;
+
+		//add data
+		result |= *((uint16_t*)(data_ptr_ + curr_byte_));
+
+		//change data
+		num_bits -= 16;
+		curr_byte_+=2;
+	}
+
+	//get rest of bytes
 	while(num_bits >= 8) {
 		//make space for new byte
 		result = result<<8;

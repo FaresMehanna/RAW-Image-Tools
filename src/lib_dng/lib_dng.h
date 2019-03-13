@@ -11,6 +11,7 @@
 #include <fstream>
 
 #include "../core/bayer_image.h"
+#include "../core/lj92_image.h"
 #include "../core/bit_iterator.h"
 #include "raw.h"
 extern "C" {
@@ -25,7 +26,7 @@ enum lib_dng_state {dng_unsupported_mode_of_operation,
 					dng_ok,
 					}; 
 
-//can output Bayer Image objects.
-lib_dng_state generate_dng(BayerImage* img, string file_name);
+//can output Bayer Image / LJ92 Image objects.
+lib_dng_state generate_dng(Image* img, string file_name);
 
 #endif

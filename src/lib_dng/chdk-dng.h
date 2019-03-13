@@ -37,6 +37,6 @@ void dng_set_focal(int nom, int denom);
 void dng_set_iso(int value);
 void dng_set_wbgain(int gain_r_n, int gain_r_d, int gain_g_n, int gain_g_d, int gain_b_n, int gain_b_d);
 void dng_set_datetime(char *datetime, char *subsectime);
-int save_dng(const char* filename, struct raw_info * raw_info);
+int save_dng(const char* filename, struct raw_info * raw_info, int lossless);
 
 #endif // __CHDK_DNG_H_

@@ -113,6 +113,7 @@ static int cam_max_av[2]                = { 0, 96 };
 static int cam_focal_length[2]          = { 0, 1000 };
 static char* software_ver = "Magic Lantern";
 static int cam_FrameRate[]          = {25000,1000};
+static int compression = 1;
 
 struct t_data_for_exif{
     short iso;
@@ -351,7 +352,7 @@ static void create_dng_header(struct raw_info * raw_info){
         {0x100,  T_LONG|T_PTR, 1,  (int)&camera_sensor.raw_rowpix},    // ImageWidth
         {0x101,  T_LONG|T_PTR, 1,  (int)&camera_sensor.raw_rows},      // ImageLength
         {0x102,  T_SHORT|T_PTR,1,  (int)&camera_sensor.bits_per_pixel},// BitsPerSample
-        {0x103,  T_SHORT,      1,  1},                                 // Compression: Uncompressed
+        {0x103,  T_SHORT,      1,  compression},                                 // Compression: Uncompressed
         {0x106,  T_SHORT,      1,  0x8023},                            // PhotometricInterpretation: CFA
         {0x111,  T_LONG,       1,  0},                                 // StripOffsets: Offset
         {0x115,  T_SHORT,      1,  1},                                 // SamplesPerPixel: 1
@@ -631,10 +632,11 @@ static void write_dng(FILE* fd, struct raw_info * raw_info)
     }
 }
 
-int save_dng(const char* filename, struct raw_info * raw_info)
+int save_dng(const char* filename, struct raw_info * raw_info, int lossless)
 {
     FILE* f = FIO_CreateFile(filename);
     if (!f) return 0;
+    compression = lossless==1?7:1;
     write_dng(f, raw_info);
     FIO_CloseFile(f);
     return 1;

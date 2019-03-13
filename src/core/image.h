@@ -14,6 +14,7 @@ class Image;
 //define Image types
 #define BAYER_IMAGE 0x1
 #define DEBAYERED_IMAGE 0x2
+#define LJ92_IMAGE 0x3
 
 #include <string.h>
 #include <unistd.h>

@@ -10,6 +10,7 @@
 
 #include "../lib_pnm/lib_pnm.h"
 #include "../lib_dng/lib_dng.h"
+#include "../core/lj92_image.h"
 #include "../core/bayer_image.h"
 #include "../core/debayered_image.h"
 #include "../core/bitdepth_converter.h"
@@ -65,10 +66,22 @@ int main(int argc, char** argv)
 			RAW12_BAYER_PATTERN,
 			RAW12_LITTLE_ENDIAN);
 	img.load_image(raw12_fp);
-
+	int img_size = img.get_used_bytes();
+	
 	{
 		LOG("Creating dng for the main image.");
 		MAIN_ASSERT(generate_dng(&img, string(argv[1]) + "_main.dng") == dng_ok, "Error while encoding to DNG file.");
+	}
+
+	{
+		LOG("Compressing 12-bits image with LJ92.");
+		hufftable ssss_values;
+		ssss_values.code = {0b000, 0b001,0b010,0b011,0b100,0b101,0b110,0b1110,0b11110,0b111110,0b1111110,0b11111110,0b111111110,0b1111111110,0b11111111110,0b111111111110,0b1111111111110};
+		ssss_values.code_length = {3,3,3,3,3,3,3,4,5,6,7,8,9,10,11,12,13};
+		LJ92Image lj92_img(img, LJ92_COMPONENTS_2, LJ92_PREDICTOR_1, ssss_values, LJ92_TRICK_HEIGHT_WIDTH);
+		LOG("Compression ratio: " + to_string((double)lj92_img.get_used_bytes()/img.get_used_bytes()));
+		LOG("Creating dng for the compressed main image.");
+		MAIN_ASSERT(generate_dng(&lj92_img, string(argv[1]) + "_lj92.dng") == dng_ok, "Error while encoding to DNG file.");
 	}
 
 	{
@@ -84,6 +97,16 @@ int main(int argc, char** argv)
 		//convert to 8-bits from 12-bits.
 		LOG("Converting image from 12-bits to 8-bits using optimal lut.");
 		img.convert_pixel_size(RAW12_GAMMA_TO_BITS, &optimal_lut);
+	}
+
+	{
+		LOG("Compressing 8-bits image with LJ92.");
+		hufftable ssss_values;
+		ssss_values.code = {0b00,0b01,0b10,0b110,0b1110,0b11110,0b111110,0b1111110,0b11111110,0b111111110,0b1111111110,0b11111111110,0b111111111110,0b1111111111110,0b11111111111110,0b111111111111110,0b1111111111111110};
+		ssss_values.code_length = {2,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+		LJ92Image lj92_img(img, LJ92_COMPONENTS_2, LJ92_PREDICTOR_1, ssss_values, LJ92_NORMAL_HEIGHT_WIDTH);
+		LOG("Compression ratio from 8-bits: " + to_string((double)lj92_img.get_used_bytes()/img.get_used_bytes()));
+		LOG("Compression ratio from 12-bits: " + to_string((double)lj92_img.get_used_bytes()/img_size));
 	}
 
 	//generate pgm for the main image
