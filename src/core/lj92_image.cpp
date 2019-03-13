@@ -97,7 +97,8 @@ template <class type> void LJ92Image::compress(bool normal_dimensions)
 	convert_pixel_size(sizeof(type)*8, &BDCE);
 
 	//create new Image with x-bit per color by 2*used bytes
-	shared_ptr<uint8_t> compressed_img(new uint8_t[used_bytes_*6], default_delete<uint8_t[]>());
+	uint8_t safe_factor = 4;
+	shared_ptr<uint8_t> compressed_img(new uint8_t[used_bytes_*safe_factor], default_delete<uint8_t[]>());
 
 	//fix dimensions
 	if(!normal_dimensions) {
@@ -112,8 +113,8 @@ template <class type> void LJ92Image::compress(bool normal_dimensions)
 	type* old_img = (type*) (image_.get());
 	type* new_img = (type*) (compressed_img.get());
 	uint8_t* new_img_8ptr = (uint8_t*) new_img;
-	memset(new_img, 0, used_bytes_*6);
-	BitIterator compressed_img_it(new_img_8ptr+3*used_bytes_, used_bytes_*3*8);
+	memset(new_img, 0, used_bytes_*safe_factor);
+	BitIterator compressed_img_it(new_img_8ptr+(safe_factor/2)*used_bytes_, used_bytes_*(safe_factor/2)*8);
 
 	uint64_t used_bits = 0, ctr = 0;
 	uint8_t ssss;
@@ -207,11 +208,11 @@ template <class type> void LJ92Image::compress(bool normal_dimensions)
 	//fix 0xFF bytes
 	uint32_t used_bytes = used_bits/8 + ((used_bits%8)==0?0:1);
 	for(int i=0; i<used_bytes; i++) {
-		if(new_img_8ptr[3 * used_bytes_ + i] == 0xFF) {
+		if(new_img_8ptr[(safe_factor/2) * used_bytes_ + i] == 0xFF) {
 			new_img_8ptr[ctr++] = 0xFF;
 			new_img_8ptr[ctr++] = 0x00;
 		} else {
-			new_img_8ptr[ctr++] = new_img_8ptr[3 * used_bytes_ + i];	
+			new_img_8ptr[ctr++] = new_img_8ptr[(safe_factor/2) * used_bytes_ + i];	
 		}
 	}
 
@@ -223,7 +224,7 @@ template <class type> void LJ92Image::compress(bool normal_dimensions)
 	image_ = compressed_img;
 	bit_depth_ = old_bit_depth;
 	pixel_size_ = old_bit_depth;
-	allocated_bytes_ = used_bytes_*6;
+	allocated_bytes_ = used_bytes_*safe_factor;
 	used_bytes_ = ctr;
 }
 

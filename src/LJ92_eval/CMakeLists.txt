@@ -1,0 +1,7 @@
+file( GLOB lj92eval_executables *.cpp )
+foreach( lj92eval_source_file ${lj92eval_executables} )
+	get_filename_component( raw_name ${lj92eval_source_file} NAME )
+	string( REPLACE ".cpp" "" raw_name ${raw_name} )
+	add_executable( ${raw_name} ${lj92eval_source_file} )
+	target_link_libraries( ${raw_name} ${Libraries} )
+endforeach( lj92eval_source_file ${lj92eval_executables} )
