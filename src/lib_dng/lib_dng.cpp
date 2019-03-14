@@ -5,11 +5,7 @@
    -3284, 10000,    11499, 10000,    1737, 10000, \
    -1283, 10000,     3550, 10000,    5967, 10000
 
-struct raw_info raw_info = {
-    .api_version = 1,
-    .calibration_illuminant1 = 1,       // Daylight
-    .color_matrix1 = {CAM_COLORMATRIX1},// camera-specific, from dcraw.c
-};
+struct raw_info raw_info;
 
 static void raw_set_geometry(int width, int height, int skip_left, int skip_right, int skip_top, int skip_bottom)
 {
@@ -39,6 +35,10 @@ lib_dng_state generate_dng(Image* img, string file_name) {
     }
 
     //set raw_info data
+    raw_info.api_version = 1;
+    raw_info.calibration_illuminant1 = 1;       // Daylight
+    int32_t temp[] = {CAM_COLORMATRIX1};
+    memcpy(raw_info.color_matrix1, temp, sizeof(temp));
     raw_info.buffer = img->get_image(false).get();
     raw_info.frame_size = img->get_used_bytes();
     raw_info.bits_per_pixel = img->get_pixel_size();

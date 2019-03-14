@@ -1,8 +1,8 @@
 project(RawImageProcessingTools)
 cmake_minimum_required(VERSION 3.10)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -O3 -m32")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -m32")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -O3")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3")
 
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

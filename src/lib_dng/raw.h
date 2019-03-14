@@ -58,11 +58,7 @@ gghhhhhhhhhhhhhh
 /* raw image info (geometry, calibration levels, color, DR etc); parts of this were copied from CHDK */
 struct raw_info {
     uint32_t api_version;           // increase this when changing the structure
-    #if INTPTR_MAX == INT32_MAX     // only works on 32-bit systems
     void* buffer;                   // points to image data
-    #else
-    uint32_t do_not_use_this;       // this can't work on 64-bit systems
-    #endif
 
     int32_t height, width, pitch;
     int32_t frame_size;

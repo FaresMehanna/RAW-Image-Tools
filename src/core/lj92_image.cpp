@@ -167,6 +167,9 @@ template <class type> void LJ92Image::compress(bool normal_dimensions)
 					case LJ92_PREDICTOR_7:
 						Px = ((Ra + Rb)/2);
 					break;
+					default:	//should never happen
+						Px = 0;
+					break;
 				}
 			}
 
@@ -201,13 +204,13 @@ template <class type> void LJ92Image::compress(bool normal_dimensions)
 	}
 
 	//put header
-	for(int i=0; i<header.size(); i++) {
+	for(unsigned int i=0; i<header.size(); i++) {
 		new_img_8ptr[ctr++] = header[i];
 	}
 
 	//fix 0xFF bytes
 	uint32_t used_bytes = used_bits/8 + ((used_bits%8)==0?0:1);
-	for(int i=0; i<used_bytes; i++) {
+	for(unsigned int i=0; i<used_bytes; i++) {
 		if(new_img_8ptr[(safe_factor/2) * used_bytes_ + i] == 0xFF) {
 			new_img_8ptr[ctr++] = 0xFF;
 			new_img_8ptr[ctr++] = 0x00;

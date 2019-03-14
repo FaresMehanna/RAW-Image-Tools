@@ -32,6 +32,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include "math.h"
+#include <unistd.h>
 #include <sys/types.h>
 #define FAST
 #define UNCACHEABLE(x) (x)
@@ -72,7 +73,7 @@ void dng_set_thumbnail_size(int width, int height)
     dng_th_height = height;
 }
 
-struct dir_entry{unsigned short tag; unsigned short type; unsigned int count; unsigned int offset;};
+struct dir_entry{unsigned short tag; unsigned short type; unsigned int count; uint64_t offset;};
 
 #define T_BYTE      1
 #define T_ASCII     2
@@ -311,12 +312,12 @@ static void create_dng_header(struct raw_info * raw_info){
         {0xFE,   T_LONG,       1,  1},                                 // NewSubFileType: Preview Image
         {0x100,  T_LONG,       1,  dng_th_width},                      // ImageWidth
         {0x101,  T_LONG,       1,  dng_th_height},                     // ImageLength
-        {0x102,  T_SHORT,      3,  (int)cam_PreviewBitsPerSample},     // BitsPerSample: 8,8,8
+        {0x102,  T_SHORT,      3,  (uint64_t)cam_PreviewBitsPerSample},     // BitsPerSample: 8,8,8
         {0x103,  T_SHORT,      1,  1},                                 // Compression: Uncompressed
         {0x106,  T_SHORT,      1,  2},                                 // PhotometricInterpretation: RGB
-        {0x10E,  T_ASCII,      sizeof(dng_image_desc), (int)dng_image_desc},               // ImageDescription
-        {0x10F,  T_ASCII,      sizeof(CAM_MAKE), (int)CAM_MAKE},       // Make
-        {0x110,  T_ASCII,      32, (int)cam_name},                     // Model: Filled at header generation.
+        {0x10E,  T_ASCII,      sizeof(dng_image_desc), (uint64_t)dng_image_desc},               // ImageDescription
+        {0x10F,  T_ASCII,      sizeof(CAM_MAKE), (uint64_t)CAM_MAKE},       // Make
+        {0x110,  T_ASCII,      32, (uint64_t)cam_name},                     // Model: Filled at header generation.
         {0x111,  T_LONG,       1,  0},                                 // StripOffsets: Offset
         {0x112,  T_SHORT,      1,  1},                                 // Orientation: 1 - 0th row is top, 0th column is left
         {0x115,  T_SHORT,      1,  3},                                 // SamplesPerPixel: 3
@@ -324,71 +325,71 @@ static void create_dng_header(struct raw_info * raw_info){
         {0x117,  T_LONG,       1,  dng_th_width*dng_th_height*3},      // StripByteCounts = preview size
         {0x11C,  T_SHORT,      1,  1},                                 // PlanarConfiguration: 1
         {0x131,  T_ASCII|T_PTR,32, 0},                                 // Software
-        {0x132,  T_ASCII,      20, (int)cam_datetime},                 // DateTime
-        {0x13B,  T_ASCII|T_PTR,64, (int)dng_artist_name},              // Artist: Filled at header generation.
+        {0x132,  T_ASCII,      20, (uint64_t)cam_datetime},                 // DateTime
+        {0x13B,  T_ASCII|T_PTR,64, (uint64_t)dng_artist_name},              // Artist: Filled at header generation.
         {0x14A,  T_LONG,       1,  0},                                 // SubIFDs offset
-        {0x8298, T_ASCII|T_PTR,64, (int)dng_copyright},                // Copyright
+        {0x8298, T_ASCII|T_PTR,64, (uint64_t)dng_copyright},                // Copyright
         {0x8769, T_LONG,       1,  0},                                 // EXIF_IFD offset
         {0x9216, T_BYTE,       4,  0x00000001},                        // TIFF/EPStandardID: 1.0.0.0
-        {0xA431, T_ASCII,      sizeof(cam_serial), (int)cam_serial},         // Exif.Photo.BodySerialNumber
-        {0xA434, T_ASCII,      sizeof(dng_lens_model), (int)dng_lens_model}, // Exif.Photo.LensModel
+        {0xA431, T_ASCII,      sizeof(cam_serial), (uint64_t)cam_serial},         // Exif.Photo.BodySerialNumber
+        {0xA434, T_ASCII,      sizeof(dng_lens_model), (uint64_t)dng_lens_model}, // Exif.Photo.LensModel
         {0xC612, T_BYTE,       4,  0x00000301},                        // DNGVersion: 1.3.0.0
         {0xC613, T_BYTE,       4,  0x00000301},                        // DNGBackwardVersion: 1.1.0.0
-        {0xC614, T_ASCII,      32, (int)cam_name},                     // UniqueCameraModel. Filled at header generation.
-        {0xC621, T_SRATIONAL,  9,  (int)&camera_sensor.color_matrix1},
-        {0xC627, T_RATIONAL,   3,  (int)cam_AnalogBalance},
-        {0xC628, T_RATIONAL,   3,  (int)cam_AsShotNeutral},
-        {0xC62A, T_SRATIONAL,  1,  (int)&camera_sensor.exposure_bias},
-        {0xC62B, T_RATIONAL,   1,  (int)cam_BaselineNoise},
-        {0xC62C, T_RATIONAL,   1,  (int)cam_BaselineSharpness},
-        {0xC62E, T_RATIONAL,   1,  (int)cam_LinearResponseLimit},
+        {0xC614, T_ASCII,      32, (uint64_t)cam_name},                     // UniqueCameraModel. Filled at header generation.
+        {0xC621, T_SRATIONAL,  9,  (uint64_t)&camera_sensor.color_matrix1},
+        {0xC627, T_RATIONAL,   3,  (uint64_t)cam_AnalogBalance},
+        {0xC628, T_RATIONAL,   3,  (uint64_t)cam_AsShotNeutral},
+        {0xC62A, T_SRATIONAL,  1,  (uint64_t)&camera_sensor.exposure_bias},
+        {0xC62B, T_RATIONAL,   1,  (uint64_t)cam_BaselineNoise},
+        {0xC62C, T_RATIONAL,   1,  (uint64_t)cam_BaselineSharpness},
+        {0xC62E, T_RATIONAL,   1,  (uint64_t)cam_LinearResponseLimit},
         {0xC65A, T_SHORT,      1, 21},                                 // CalibrationIlluminant1 D65
         //{0xC65B, T_SHORT,      1, 21},                                 // CalibrationIlluminant2 D65 (change this if ColorMatrix2 is added)
-        {0xC764, T_SRATIONAL,  1,  (int)cam_FrameRate},
+        {0xC764, T_SRATIONAL,  1,  (uint64_t)cam_FrameRate},
     };
 
     struct dir_entry ifd1[]={
         {0xFE,   T_LONG,       1,  0},                                 // NewSubFileType: Main Image
-        {0x100,  T_LONG|T_PTR, 1,  (int)&camera_sensor.raw_rowpix},    // ImageWidth
-        {0x101,  T_LONG|T_PTR, 1,  (int)&camera_sensor.raw_rows},      // ImageLength
-        {0x102,  T_SHORT|T_PTR,1,  (int)&camera_sensor.bits_per_pixel},// BitsPerSample
+        {0x100,  T_LONG|T_PTR, 1,  (uint64_t)&camera_sensor.raw_rowpix},    // ImageWidth
+        {0x101,  T_LONG|T_PTR, 1,  (uint64_t)&camera_sensor.raw_rows},      // ImageLength
+        {0x102,  T_SHORT|T_PTR,1,  (uint64_t)&camera_sensor.bits_per_pixel},// BitsPerSample
         {0x103,  T_SHORT,      1,  compression},                                 // Compression: Uncompressed
         {0x106,  T_SHORT,      1,  0x8023},                            // PhotometricInterpretation: CFA
         {0x111,  T_LONG,       1,  0},                                 // StripOffsets: Offset
         {0x115,  T_SHORT,      1,  1},                                 // SamplesPerPixel: 1
-        {0x116,  T_SHORT|T_PTR,1,  (int)&camera_sensor.raw_rows},      // RowsPerStrip
-        {0x117,  T_LONG|T_PTR, 1,  (int)&camera_sensor.raw_size},      // StripByteCounts = CHDK RAW size
-        {0x11A,  T_RATIONAL,   1,  (int)cam_Resolution},               // XResolution
-        {0x11B,  T_RATIONAL,   1,  (int)cam_Resolution},               // YResolution
+        {0x116,  T_SHORT|T_PTR,1,  (uint64_t)&camera_sensor.raw_rows},      // RowsPerStrip
+        {0x117,  T_LONG|T_PTR, 1,  (uint64_t)&camera_sensor.raw_size},      // StripByteCounts = CHDK RAW size
+        {0x11A,  T_RATIONAL,   1,  (uint64_t)cam_Resolution},               // XResolution
+        {0x11B,  T_RATIONAL,   1,  (uint64_t)cam_Resolution},               // YResolution
         {0x11C,  T_SHORT,      1,  1},                                 // PlanarConfiguration: 1
         {0x128,  T_SHORT,      1,  2},                                 // ResolutionUnit: inch
         {0x828D, T_SHORT,      2,  0x00020002},                        // CFARepeatPatternDim: Rows = 2, Cols = 2
-        {0x828E, T_BYTE|T_PTR, 4,  (int)&camera_sensor.cfa_pattern},
-        {0xC61A, T_LONG|T_PTR, 1,  (int)&camera_sensor.black_level},   // BlackLevel
-        {0xC61D, T_LONG|T_PTR, 1,  (int)&camera_sensor.white_level},   // WhiteLevel
-        {0xC61F, T_LONG,       2,  (int)&camera_sensor.crop.origin},
-        {0xC620, T_LONG,       2,  (int)&camera_sensor.crop.size},
-        {0xC68D, T_LONG,       4,  (int)&camera_sensor.dng_active_area},
-        {0xC740, T_UNDEFINED|T_PTR, sizeof(badpixel_opcode),  (int)&badpixel_opcode},
+        {0x828E, T_BYTE|T_PTR, 4,  (uint64_t)&camera_sensor.cfa_pattern},
+        {0xC61A, T_LONG|T_PTR, 1,  (uint64_t)&camera_sensor.black_level},   // BlackLevel
+        {0xC61D, T_LONG|T_PTR, 1,  (uint64_t)&camera_sensor.white_level},   // WhiteLevel
+        {0xC61F, T_LONG,       2,  (uint64_t)&camera_sensor.crop.origin},
+        {0xC620, T_LONG,       2,  (uint64_t)&camera_sensor.crop.size},
+        {0xC68D, T_LONG,       4,  (uint64_t)&camera_sensor.dng_active_area},
+        {0xC740, T_UNDEFINED|T_PTR, sizeof(badpixel_opcode),  (uint64_t)&badpixel_opcode},
     };
 
     struct dir_entry exif_ifd[]={
-        {0x829A, T_RATIONAL,   1,  (int)cam_shutter},          // Shutter speed
-        {0x829D, T_RATIONAL,   1,  (int)cam_aperture},         // Aperture
+        {0x829A, T_RATIONAL,   1,  (uint64_t)cam_shutter},          // Shutter speed
+        {0x829D, T_RATIONAL,   1,  (uint64_t)cam_aperture},         // Aperture
         {0x8822, T_SHORT,      1,  0},                         // ExposureProgram
-        {0x8827, T_SHORT|T_PTR,1,  (int)&exif_data.iso},       // ISOSpeedRatings
+        {0x8827, T_SHORT|T_PTR,1,  (uint64_t)&exif_data.iso},       // ISOSpeedRatings
         {0x9000, T_UNDEFINED,  4,  0x31323230},                // ExifVersion: 2.21
-        {0x9003, T_ASCII,      20, (int)cam_datetime},         // DateTimeOriginal
-        {0x9201, T_SRATIONAL,  1,  (int)cam_apex_shutter},     // ShutterSpeedValue (APEX units)
-        {0x9202, T_RATIONAL,   1,  (int)cam_apex_aperture},    // ApertureValue (APEX units)
-        {0x9204, T_SRATIONAL,  1,  (int)cam_exp_bias},         // ExposureBias
-        {0x9205, T_RATIONAL,   1,  (int)cam_max_av},           // MaxApertureValue
+        {0x9003, T_ASCII,      20, (uint64_t)cam_datetime},         // DateTimeOriginal
+        {0x9201, T_SRATIONAL,  1,  (uint64_t)cam_apex_shutter},     // ShutterSpeedValue (APEX units)
+        {0x9202, T_RATIONAL,   1,  (uint64_t)cam_apex_aperture},    // ApertureValue (APEX units)
+        {0x9204, T_SRATIONAL,  1,  (uint64_t)cam_exp_bias},         // ExposureBias
+        {0x9205, T_RATIONAL,   1,  (uint64_t)cam_max_av},           // MaxApertureValue
         {0x9207, T_SHORT,      1,  0},                         // Metering mode
         {0x9209, T_SHORT,      1,  0},                         // Flash mode
-        {0x920A, T_RATIONAL,   1,  (int)cam_focal_length},     // FocalLength
-        {0x9290, T_ASCII|T_PTR,4,  (int)cam_subsectime},       // DateTime milliseconds
-        {0x9291, T_ASCII|T_PTR,4,  (int)cam_subsectime},       // DateTimeOriginal milliseconds
-        {0xA405, T_SHORT|T_PTR,1,  (int)&exif_data.effective_focal_length},    // FocalLengthIn35mmFilm
+        {0x920A, T_RATIONAL,   1,  (uint64_t)cam_focal_length},     // FocalLength
+        {0x9290, T_ASCII|T_PTR,4,  (uint64_t)cam_subsectime},       // DateTime milliseconds
+        {0x9291, T_ASCII|T_PTR,4,  (uint64_t)cam_subsectime},       // DateTimeOriginal milliseconds
+        {0xA405, T_SHORT|T_PTR,1,  (uint64_t)&exif_data.effective_focal_length},    // FocalLengthIn35mmFilm
     };
 
     struct
@@ -428,7 +429,7 @@ static void create_dng_header(struct raw_info * raw_info){
 
     // Fix the counts and offsets where needed
     ifd0[CAMERA_NAME_INDEX].count = ifd0[UNIQUE_CAMERA_MODEL_INDEX].count = strlen(cam_name) + 1;
-    ifd0[CHDK_VER_INDEX].offset = (int)software_ver;
+    ifd0[CHDK_VER_INDEX].offset = (uint64_t)software_ver;
     ifd0[CHDK_VER_INDEX].count = strlen(software_ver) + 1;
     ifd0[ARTIST_NAME_INDEX].count = strlen(dng_artist_name) + 1;
     ifd0[COPYRIGHT_INDEX].count = strlen(dng_copyright) + 1;
