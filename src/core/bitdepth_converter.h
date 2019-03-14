@@ -45,9 +45,9 @@ class BD_ConverterEqual : public BD_Converter{
  */
 class BD_ConverterGGO : public BD_Converter{
 	private:
-		std::shared_ptr<uint16_t> lookup_tableـ;
-		uint16_t* lookup_table_ptrـ;
-		uint16_t max_valـ;
+		std::shared_ptr<uint16_t> lookup_table_;
+		uint16_t* lookup_table_ptr_;
+		uint16_t max_val_;
 	public:
 		BD_ConverterGGO(uint8_t bit_depth_from, uint8_t bit_depth_to, double gamma, double gain, double offset);
 		virtual uint16_t convert(uint16_t pixel_value) override;
