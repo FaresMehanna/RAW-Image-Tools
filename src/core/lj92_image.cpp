@@ -160,13 +160,13 @@ template <class type> void LJ92Image::compress(bool normal_dimensions)
 						Px = Ra + Rb - Rc;
 					break;
 					case LJ92_PREDICTOR_5:
-						Px = Ra + ((Rb - Rc)/2);
+						Px = Ra + ((Rb - Rc)>>1);
 					break;
 					case LJ92_PREDICTOR_6:
-						Px = Rb + ((Ra - Rc)/2);
+						Px = Rb + ((Ra - Rc)>>1);
 					break;
 					case LJ92_PREDICTOR_7:
-						Px = ((Ra + Rb)/2);
+						Px = ((Ra + Rb)>>1);
 					break;
 					default:	//should never happen
 						Px = 0;
