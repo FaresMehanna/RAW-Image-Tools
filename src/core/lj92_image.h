@@ -49,6 +49,7 @@ class LJ92Image : public Image{
 		int predictor_;
 		hufftable ssss_values_;
 		uint32_t bayer_pattern_;
+		vector<uint32_t> ssss_histogram_;
 
 		vector<uint8_t> generate_header();
 		template <class pixel_type> void compress(bool normal_dimensions);
@@ -105,6 +106,7 @@ class LJ92Image : public Image{
 		using Image::get_used_bytes;
 		uint64_t get_used_bits() override;	//always = get_used_bytes*8
 		uint32_t get_bayer_pattern();
+		vector<uint32_t> get_ssss_histogram();
 };
 
 #endif

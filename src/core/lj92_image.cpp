@@ -2,12 +2,13 @@
 
 using namespace std;
 
-LJ92Image::LJ92Image(BayerImage img, int num_components, int predictor, hufftable ssss_values, bool normal_dimensions) :
-	Image(img.get_bit_depth(),
+LJ92Image::LJ92Image(BayerImage img, int num_components, int predictor, hufftable ssss_values, bool normal_dimensions)
+	: Image(img.get_bit_depth(),
 		img.get_pixel_size(),
 		img.get_height(),
 		img.get_width(),
 		img.get_little_endian())
+	, ssss_histogram_(17,0)
 {
 	assert_util(num_components >= 1 && num_components <= 4, "num_components must be from 1 to 4.");
 	assert_util(predictor >= 1 && predictor <= 7, "predictor must be from 1 to 7.");
@@ -181,6 +182,7 @@ template <class type> void LJ92Image::compress(bool normal_dimensions)
 			if (diff == 0){
 				ssss = 0;
 			}
+			ssss_histogram_[ssss]++;
 
 			//normalize negative values
 			half = ssss>0?(1<<(ssss-1)):0;
@@ -249,4 +251,9 @@ uint64_t LJ92Image::get_used_bits()
 uint32_t LJ92Image::get_bayer_pattern()
 {
 	return bayer_pattern_;
+}
+
+vector<uint32_t> LJ92Image::get_ssss_histogram()
+{
+	return ssss_histogram_;
 }

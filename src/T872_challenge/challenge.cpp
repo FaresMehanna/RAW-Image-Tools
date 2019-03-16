@@ -92,6 +92,7 @@ int main(int argc, char** argv)
 		ofstream main_image;
 		string image_file_name = string(argv[1]) + "_bayer_image." + file_type;
 		main_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
+		MAIN_ASSERT(main_image.is_open() == true, "Can't open file to write image data.");
 		//generate and write to the file
 		MAIN_ASSERT(generate_pnm(LIB_PNM_BINARY_OUTPUT, &img, main_image) == pnm_ok, "Error while encoding to PNM file.");
 		main_image.close();
@@ -113,6 +114,7 @@ int main(int argc, char** argv)
 		ofstream channel_image;
 		string image_file_name = string(argv[1]) + "_channel_" + to_string(i) + "." + file_type;
 		channel_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
+		MAIN_ASSERT(channel_image.is_open() == true, "Can't open file to write channel_image data.");
 
 		//generate and write to the file
 		LOG("Creating pgm for the channel " + to_string(i) + "."); LINE();
@@ -130,6 +132,7 @@ int main(int argc, char** argv)
 		ofstream debayered_image;
 		string image_file_name = string(argv[1]) + "_debayered_image." + file_type;
 		debayered_image.open(image_file_name, ios::out | ios::trunc | ios::binary);
+		MAIN_ASSERT(debayered_image.is_open() == true, "Can't open file to write debayered_image data.");
 
 		//generate ppm for the debayered image
 		LOG("Debayering and creating ppm for the debayered image."); LINE();

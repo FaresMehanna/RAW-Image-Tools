@@ -7,6 +7,8 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <algorithm>
+#include <sstream>
 
 #include "../lib_pnm/lib_pnm.h"
 #include "../lib_dng/lib_dng.h"
@@ -14,6 +16,7 @@
 #include "../core/bayer_image.h"
 #include "../core/debayered_image.h"
 #include "../core/bitdepth_converter.h"
+#include "ssss_draw.h"
 
 using namespace std;
 
@@ -55,7 +58,7 @@ int main(int argc, char** argv)
 	LOG("LJ92: normal height and width.");
 	LINE();
 	LOG("LJ92: huffman codes for 12-bit image.");
-	LOG("0b000, 0b001,0b010,0b011,0b100,0b101,0b110,0b1110,0b11110,0b111110,0b1111110,0b11111110,0b111111110,0b1111111110,0b11111111110,0b111111111110,0b1111111111110");
+	LOG("0b1110, 0b001,0b010,0b011,0b100,0b101,0b110,0b000,0b11110,0b111110,0b1111110,0b11111110,0b111111110,0b1111111110,0b11111111110,0b111111111110,0b1111111111110");
 	LINE();
 	LOG("LJ92: huffman codes for 8-bit image.");
 	LOG("0b00,0b01,0b10,0b110,0b1110,0b11110,0b111110,0b1111110,0b11111110,0b111111110,0b1111111110,0b11111111110,0b111111111110,0b1111111111110,0b11111111111110,0b111111111111110,0b1111111111111110");
@@ -80,10 +83,12 @@ int main(int argc, char** argv)
 	{
 		LOG("Compressing 12-bits image with LJ92.");
 		hufftable ssss_values;
-		ssss_values.code = {0b000, 0b001,0b010,0b011,0b100,0b101,0b110,0b1110,0b11110,0b111110,0b1111110,0b11111110,0b111111110,0b1111111110,0b11111111110,0b111111111110,0b1111111111110};
-		ssss_values.code_length = {3,3,3,3,3,3,3,4,5,6,7,8,9,10,11,12,13};
+		ssss_values.code = {0b1110, 0b000,0b001,0b010,0b011,0b100,0b101,0b110,0b11110,0b111110,0b1111110,0b11111110,0b111111110,0b1111111110,0b11111111110,0b111111111110,0b1111111111110};
+		ssss_values.code_length = {4,3,3,3,3,3,3,3,5,6,7,8,9,10,11,12,13};
 		LJ92Image lj92_img(img, LJ92_COMPONENTS_2, LJ92_PREDICTOR_1, ssss_values, LJ92_NORMAL_HEIGHT_WIDTH);
-		LOG("Compression ratio: " + to_string((double)lj92_img.get_used_bytes()/img_size));
+		LOG("Compression ratio: " + to_string((double)lj92_img.get_used_bytes()/img_size) + ".");
+		LOG("Pixel size: " + to_string((double)lj92_img.get_used_bytes()/img_size*12) + " bits.");
+		LINE(); draw_ssss(lj92_img.get_ssss_histogram(), ssss_values.code, ssss_values.code_length); LINE();
 		LOG("Creating dng for the compressed main image."); LINE();
 		MAIN_ASSERT(generate_dng(&lj92_img, string(argv[1]) + "_lj92.dng") == dng_ok, "Error while encoding to DNG file.");
 	}
@@ -110,6 +115,8 @@ int main(int argc, char** argv)
 		ssss_values.code_length = {2,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
 		LJ92Image lj92_img(img, LJ92_COMPONENTS_2, LJ92_PREDICTOR_1, ssss_values, LJ92_NORMAL_HEIGHT_WIDTH);
 		LOG("Compression ratio: " + to_string((double)lj92_img.get_used_bytes()/img_size) + ".");
+		LOG("Pixel size: " + to_string((double)lj92_img.get_used_bytes()/img_size*12) + " bits.");
+		LINE(); draw_ssss(lj92_img.get_ssss_histogram(), ssss_values.code, ssss_values.code_length); LINE();
 		LOG("Creating dng for the compressed 8-bits main image."); LINE();
 		MAIN_ASSERT(generate_dng(&lj92_img, string(argv[1]) + "_8bits_lj92.dng") == dng_ok, "Error while encoding to DNG file.");
 	}
