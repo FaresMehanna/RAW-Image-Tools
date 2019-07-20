@@ -2,19 +2,20 @@
 
 using namespace std;
 
-LJ92Image::LJ92Image(BayerImage img, int num_components, int predictor, hufftable ssss_values, bool normal_dimensions)
+LJ92Image::LJ92Image(BayerImage img, int num_components, int predictor, hufftable ssss_values, bool normal_dimensions, bool ones_fix)
 	: Image(img.get_bit_depth(),
 		img.get_pixel_size(),
 		img.get_height(),
 		img.get_width(),
 		img.get_little_endian())
 	, ssss_histogram_(17,0)
+	, four_pixels_count_(128,0)
 {
 	assert_util(num_components >= 1 && num_components <= 4, "num_components must be from 1 to 4.");
 	assert_util(predictor >= 1 && predictor <= 7, "predictor must be from 1 to 7.");
 	assert_util(ssss_values.code.size() == 17, "hufftable must handle all 17 possible values.");
 	assert_util(ssss_values.code_length.size() == 17, "hufftable must handle all 17 possible values.");
-
+	xff_fix_ = ones_fix;
 	num_components_ = num_components;
 	predictor_ = predictor;
 	ssss_values_ = ssss_values;
@@ -83,7 +84,7 @@ vector<uint8_t> LJ92Image::generate_header()
 	ADD_HEADER(predictor_);
 	ADD_HEADER(0);
 	ADD_HEADER(0);
-
+	header_size_ = header.size();
 	return header;
 }
 
@@ -120,6 +121,10 @@ template <class type> void LJ92Image::compress(bool normal_dimensions)
 	uint64_t used_bits = 0, ctr = 0;
 	uint8_t ssss;
 	int32_t Px, diff, X, Ra, Rb, Rc, half;
+
+	//keep track of four pixels size
+	uint32_t iteration_number = 0;
+	uint8_t four_pixels_c = 0;
 
 	//compress
 	for(int row=0; row<height_; row++) {
@@ -197,6 +202,15 @@ template <class type> void LJ92Image::compress(bool normal_dimensions)
 				compressed_img_it.set(diff, ssss);
 				used_bits += ssss;
 			}
+
+			// four pixels counter
+			four_pixels_c += ssss_values_.code_length[ssss];
+			four_pixels_c += ssss;
+			iteration_number++;
+			if(iteration_number % 4 == 0) {
+				four_pixels_count_[four_pixels_c]++;
+				four_pixels_c = 0;
+			}
 		}
 	}
 
@@ -209,16 +223,22 @@ template <class type> void LJ92Image::compress(bool normal_dimensions)
 	for(unsigned int i=0; i<header.size(); i++) {
 		new_img_8ptr[ctr++] = header[i];
 	}
-
-	//fix 0xFF bytes
-	uint32_t used_bytes = used_bits/8 + ((used_bits%8)==0?0:1);
-	for(unsigned int i=0; i<used_bytes; i++) {
-		if(new_img_8ptr[(safe_factor/2) * used_bytes_ + i] == 0xFF) {
-			new_img_8ptr[ctr++] = 0xFF;
-			new_img_8ptr[ctr++] = 0x00;
-		} else {
+	if(xff_fix_) {
+		//fix 0xFF bytes
+		uint32_t used_bytes = used_bits/8 + ((used_bits%8)==0?0:1);
+		for(unsigned int i=0; i<used_bytes; i++) {
+			if(new_img_8ptr[(safe_factor/2) * used_bytes_ + i] == 0xFF) {
+				new_img_8ptr[ctr++] = 0xFF;
+				new_img_8ptr[ctr++] = 0x00;
+			} else {
+				new_img_8ptr[ctr++] = new_img_8ptr[(safe_factor/2) * used_bytes_ + i];	
+			}
+		}	
+	} else {
+		uint32_t used_bytes = used_bits/8 + ((used_bits%8)==0?0:1);
+		for(unsigned int i=0; i<used_bytes; i++) {
 			new_img_8ptr[ctr++] = new_img_8ptr[(safe_factor/2) * used_bytes_ + i];	
-		}
+		}	
 	}
 
 	//put end EOI
@@ -257,3 +277,15 @@ vector<uint32_t> LJ92Image::get_ssss_histogram()
 {
 	return ssss_histogram_;
 }
+
+vector<uint32_t> LJ92Image::get_four_pixels_count()
+{
+	return four_pixels_count_;
+}
+
+uint32_t LJ92Image::get_header_size()
+{
+	return header_size_;
+}
+
+

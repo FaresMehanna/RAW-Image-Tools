@@ -18,4 +18,6 @@ The repository contains various parts that handle generic operations which make 
 ### LJ92_eval:
 - Take only single RAW12 image as a parameter.
 - Output 3 DNG images, 12-bits uncompressed, LJ92 12-bits compressed and LJ92 8-bits compressed.
+- Output 4 lj92 files, with/without header and with/without 0xFF fix.
+- The current LJ92 configuration in this file is predictor=1 and components=4 with normal height and depth.
 - It does output also several info on the terminal showing information about the compression ratio, LJ92 encoder details and a lot of information about SSSS classes which can help to determine the best Huffman tree.

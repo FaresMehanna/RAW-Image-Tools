@@ -8,6 +8,7 @@ class LJ92Image;
 #include <unistd.h>
 #include <stdio.h>
 
+#include <iostream>
 #include <algorithm>
 #include <string>
 #include <memory>
@@ -34,6 +35,10 @@ using namespace std;
 #define LJ92_COMPONENTS_3 (3)
 #define LJ92_COMPONENTS_4 (4)
 
+#define LJ92_0XFF_FIX (true)
+#define LJ92_0XFF_NO_FIX (false)
+
+
 #define LJ92_NORMAL_HEIGHT_WIDTH (true)
 #define LJ92_TRICK_HEIGHT_WIDTH (false)
 
@@ -49,7 +54,10 @@ class LJ92Image : public Image{
 		int predictor_;
 		hufftable ssss_values_;
 		uint32_t bayer_pattern_;
+		uint32_t header_size_;
+		bool xff_fix_;
 		vector<uint32_t> ssss_histogram_;
+		vector<uint32_t> four_pixels_count_;
 
 		vector<uint8_t> generate_header();
 		template <class pixel_type> void compress(bool normal_dimensions);
@@ -66,7 +74,8 @@ class LJ92Image : public Image{
 		 * normal_dimensions: if LJ92_NORMAL_HEIGHT_WIDTH, then no change will happen,
 		 * if LJ92_TRICK_HEIGHT_WIDTH, then encoder will treat width*2, height/2.
 		 */
-		LJ92Image(BayerImage img, int num_components, int predictor, hufftable ssss_values, bool normal_dimensions);
+		LJ92Image(BayerImage img, int num_components, int predictor,
+		 hufftable ssss_values, bool normal_dimensions, bool ones_fix);
 
 
 		/**
@@ -106,7 +115,9 @@ class LJ92Image : public Image{
 		using Image::get_used_bytes;
 		uint64_t get_used_bits() override;	//always = get_used_bytes*8
 		uint32_t get_bayer_pattern();
+		uint32_t get_header_size();
 		vector<uint32_t> get_ssss_histogram();
+		vector<uint32_t> get_four_pixels_count();
 };
 
 #endif
