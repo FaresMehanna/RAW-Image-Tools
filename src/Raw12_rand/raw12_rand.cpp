@@ -50,10 +50,10 @@ int main(int argc, char** argv)
 	srand(time(0));
 	uint32_t random_array[RAND_ARRAY_SIZE];
 	for(int i=0; i<RAND_ARRAY_SIZE; i++) {
-		random_array[i] = (rand() << 24) |
-						  (rand() << 16) |
-						  (rand() << 8) |
-						  (rand());
+		random_array[i] = (((uint32_t)rand()%256) << 24) |
+						  (((uint32_t)rand()%256) << 16) |
+						  (((uint32_t)rand()%256) << 8) |
+						  (((uint32_t)rand()%256));
 	}
 
 	// 196,608 for RAND_FACTOR=64
